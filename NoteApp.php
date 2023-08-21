@@ -9,19 +9,55 @@ $database = "NoteApp";
 // create a connection
 $conn =  mysqli_connect($servername,$username,$password,$database);
 $insert = false;
-if($_SERVER['REQUEST_METHOD'] == 'POST' ){
-    $Title = $_POST['title'];
-    $Desc = $_POST['description'];
-  
-    $sql = "INSERT INTO `note` ( `Title`, `Dis`) VALUES ( '$Title', '$Desc');";
-    $result = mysqli_query($conn,$sql);
+$update = false;
+$delete = false;
 
-   if($result){
-    $insert = true;
-  }
-  }
-  
+// for delete operation
 
+if(isset($_GET['delete'])){
+  $sno = $_GET['delete'];
+  $delete = true;
+  $sql = "DELETE FROM `note` WHERE `sno` = $sno";
+  $result = mysqli_query($conn, $sql);
+}
+ 
+  // if($_SERVER['REQUEST_METHOD'] == 'POST'){
+  //   if(isset($_POST['snoEdit'])){
+  //     // update the record
+  //     $sno = $_POST['snoEdit'];
+  //     $Title = $_POST['edittitle'];
+  //     $Desc = $_POST['editdis'];
+
+  //     // sql update
+
+  //     $sql = "UPDATE `note` SET `Title` = '$Title', `Dis` = '$Desc' WHERE `note`.`sno` = $sno";
+  //     $result = mysqli_query($conn,$sql);
+  //     if($result){
+  //       $update = true;
+  //       echo "Updated successfully";
+  //     }
+  //     else{
+  //       echo "We could not updated the data";
+  //     }
+  //   }
+  // }
+  //   else{
+ 
+    if($_SERVER['REQUEST_METHOD'] == 'POST'){
+      $Title = $_POST['title'];
+      $Desc = $_POST['description'];
+    
+      $sql = "INSERT INTO `note` ( `Title`, `Dis`) VALUES ( '$Title', '$Desc')";
+      $result = mysqli_query($conn,$sql);
+  
+     if($result){
+      $insert = true;
+    }
+    else{
+      echo "we could not insert the data";
+    }
+  }
+//}
 ?>
 <!doctype html>
 <html lang="en">
@@ -33,31 +69,44 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' ){
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
+
+
   </head>
   <body>
 
   
 <!-- Modal -->
+<div class="modal fade" id="editmodal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel">Edit this Note</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <form action="/learning/NoteApp.php" method="POST">
+          <div class="modal-body">
+            <input type="hidden" name="snoEdit" id="snoEdit">
+            <div class="form-group">
+              <label for="title">Note Title</label>
+              <input type="text" class="form-control" id="edittitle" name="edittitle" aria-describedby="emailHelp">
+            </div>
 
-<div class="modal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Confirm</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p>Modal body text goes here.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
+            <div class="form-group">
+              <label for="desc">Note Description</label>
+              <textarea class="form-control" id="editdis" name="editdis" rows="3"></textarea>
+            </div> 
+          </div>
+          <div class="modal-footer d-block mr-auto">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
-</div>
 
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
@@ -147,6 +196,7 @@ if(!$conn){
       <th scope="col">SL. NO.</th>
       <th scope="col">Title</th>
       <th scope="col">Description</th>
+      <th scope="col">Timestamp</th>
       <th scope="col">Action</th>
     </tr>
   </thead>
@@ -163,9 +213,12 @@ if(!$conn){
                 <td>". $row ['Title'] ."</td>
                 <td>".$row ['Dis'] ."</td>
                 <td>".$row ['Timestamp'] ."</td>
-                <td> <a href = '/edit'>Edit </a> <a href = '/delete'>Delete </a>
+                <td>  <button class='edit btn btn-sm btn-primary' id=".$row['sno'].">Edit</button> <button class='delete btn btn-sm btn-primary' id=d".$row['sno'].">Delete</button>  </td>
+            
               </tr>";
                 // echo $row['SL.No.'] ." " . $row['Title']. $row['Dis'].$row['Timestamp'];
+
+               //
                 
                }
                
@@ -174,23 +227,58 @@ if(!$conn){
   </tbody>
 </table>
     </div>
-  </body>
-  <!-- scripts -->
 
+  <!-- scripts -->
+<!-- JQuery -->
+<script src="https://code.jquery.com/jquery-3.7.0.js" integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
   <!-- Bootstrap -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
   <!-- Datatables -->
   <script src ="//cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js" ></script>
-   <!-- JQuery -->
-  <script src="https://code.jquery.com/jquery-3.7.0.js" integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
-
  <!-- Initializint Data tables -->
-
  <script>
 
 $(document).ready( function () {
     $('#myTable').DataTable();
 } );
  </script>
+<script>
+  edits = document.getElementsByClassName('edit');
+    Array.from(edits).forEach((element) => {
+      element.addEventListener("click", (e) => {
+        console.log("edit ");
+        tr = e.target.parentNode.parentNode;
+        title = tr.getElementsByTagName("td")[0].innerText;
+        description = tr.getElementsByTagName("td")[1].innerText;
+        console.log(title, description);
+        edittitle.value = title;
+        editdis.value = description;
+        snoEdit.value = e.target.id;
+        console.log(e.target.id);
+        $('#editmodal').modal('toggle');
+      })
+    })
 
+    deletes = document.getElementsByClassName('delete');
+    Array.from(deletes).forEach((element) => {
+      element.addEventListener("click", (e) => {
+        console.log("delete ");
+        sno = e.target.id.substr(1);
+
+        if (confirm("Are you sure you want to delete this note!")) {
+          console.log("yes");
+          window.location = `/learning/NoteApp.php?delete=${sno}`;
+          // TODO: Create a form and use post request to submit a form
+        }
+        else {
+          console.log("no");
+        }
+      })
+    })
+</script>
+  </body>
 </html>
