@@ -23,11 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($pass == $cpass) {
 
+      $hash = password_hash($pass,PASSWORD_DEFAULT);
 
 
-
-
-      $sql = "INSERT INTO `user`( `username`, `password`) VALUES ('$user','$pass')";
+      $sql = "INSERT INTO `user`( `username`, `password`) VALUES ('$user','$hash')";
       $result = mysqli_query($conn, $sql);
       if ($result) {
         $signup = true;
@@ -91,18 +90,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <form action="/learning/signup.php" method="POST">
       <div class="form-group">
         <label for="username">Email address</label>
-        <input type="text" class="form-control" id="username" name="username" aria-describedby="emailHelp"
+        <input type="text" class="form-control" id="username" name="username" aria-describedby="emailHelp" maxlength ="11"
           placeholder="Enter email">
         <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
       </div>
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" class="form-control" id="password" name="password" placeholder="Password">
+        <input type="password" class="form-control" id="password" name="password" maxlength="11" placeholder="Password">
       </div>
 
       <div class="form-group">
         <label for="cpassword">Confirm Password</label>
-        <input type="password" class="form-control" id="cpassword" name="cpassword" placeholder="Password">
+        <input type="password" class="form-control" id="cpassword" name="cpassword" placeholder="Password" maxlength="11">
       </div>
 
       <button type="submit" class="btn btn-primary">Sign Up</button>

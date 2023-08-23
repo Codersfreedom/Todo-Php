@@ -9,17 +9,26 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     $user = $_POST['username'];
     $pass = $_POST['password'];
 
-    $sql = "SELECT * FROM `user` where `username` = '$user' AND `password` = '$pass'";
+    $sql = "SELECT * FROM `user` where `username` = '$user'";
     $result = mysqli_query($conn,$sql);
     $num = mysqli_num_rows($result);
 
 
     if($num == 1){
-        $login = true;
-        session_start();
-        $_SESSION['loggedin'] = true;
-        $_SESSION['username'] = $user;
-        header('location:NoteApp.php');
+        while($row = mysqli_fetch_assoc($result)){
+           if(password_verify($pass,$row['password'])){
+            $login = true;
+            session_start();
+            $_SESSION['loggedin'] = true;
+            $_SESSION['username'] = $user;
+            header('location:NoteApp.php');
+
+           }
+           else{
+            $showerror ="Invalid Password";
+           }
+        }
+     
     }
     else
     {
@@ -79,12 +88,12 @@ if($passmismatch){
     <form action="/learning/login.php" method = "POST">
   <div class="form-group">
     <label for="username">Email address</label>
-    <input type="text" class="form-control" id="username" name="username" aria-describedby="emailHelp" placeholder="Enter email">
+    <input type="text" class="form-control" id="username" name="username" aria-describedby="emailHelp" maxlength ="11" placeholder="Enter email">
     <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
   </div>
   <div class="form-group">
     <label for="password">Password</label>
-    <input type="password" class="form-control" id="password" name="password" placeholder="Password">
+    <input type="password" class="form-control" id="password" name="password" maxlength ="11" placeholder="Password">
   </div>
 
 
